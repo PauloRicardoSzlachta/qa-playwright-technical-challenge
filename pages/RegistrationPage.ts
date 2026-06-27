@@ -1,8 +1,7 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 
 /**
- * Interface para definição do contrato de dados do usuário.
- * Centraliza a estrutura para facilitar a manutenção dos testes.
+ * Interface que define a estrutura de dados para o registro de novos usuários.
  */
 export interface RegistrationUser {
   firstName: string;
@@ -19,6 +18,9 @@ export interface RegistrationUser {
   password: string;
 }
 
+/**
+ * Page Object responsável pela página de registro de clientes.
+ */
 export class RegistrationPage {
   readonly page: Page;
   readonly firstNameInput: Locator;
@@ -52,28 +54,27 @@ export class RegistrationPage {
     this.registerButton = page.locator('button[data-test="register-submit"]');
   }
 
-  async navigate() {
+  async navegar() {
     await this.page.goto('/auth/register');
   }
 
   /**
-   * Realiza o fluxo completo de registro.
-   * Nota: Utilizamos interações de teclado em campos específicos para garantir 
-   * o disparo de eventos de validação e reatividade do framework da página.
+   * Executa o preenchimento do formulário e submissão do registro.
+   * Utilizamos interações via teclado para garantir que os eventos de 
+   * reatividade da SPA sejam disparados corretamente.
    */
-  async register(user: RegistrationUser) {
+  async registrar(user: RegistrationUser) {
     await this.firstNameInput.fill(user.firstName);
     await this.lastNameInput.fill(user.lastName);
     
-    // Preenchimento da data seguido de Tab para garantir o processamento da validação
+    // Disparo de Tab para processamento da validação de data
     await this.dobInput.fill(user.dob);
     await this.page.keyboard.press('Tab');
 
-    // A seleção do país dispara a habilitação dos campos de endereço
     await this.countrySelect.selectOption(user.country);
     await this.page.keyboard.press('Tab');
 
-    // Uso de digitação direta para contornar latências de renderização da SPA
+    // Preenchimento via teclado para evitar bloqueios de estado do framework
     await this.page.keyboard.type(user.postcode, { delay: 50 });
     await this.page.keyboard.press('Tab');
 
@@ -94,5 +95,8 @@ export class RegistrationPage {
     await this.passwordInput.fill(user.password);
 
     await this.registerButton.click();
+
+    // Sincronização: Aguarda o redirecionamento para garantir a persistência
+    await this.page.waitForURL(/.*login/);
   }
 }
