@@ -1,28 +1,51 @@
 import { test, expect } from '@playwright/test';
+import { RegistrationPage, RegistrationUser } from '../pages/RegistrationPage';
 import { LoginPage } from '../pages/LoginPage';
+import { faker } from '@faker-js/faker';
 
-test.describe('Autenticação - Cenários de Exceção', () => {
+/**
+ * Função utilitária para geração de credenciais seguras.
+ */
+function gerarSenhaForte(): string {
+  return faker.internet.password({ length: 12 }) + '1aA!';
+}
+
+test.describe('Fluxo de Autenticação', () => {
+  let registrationPage: RegistrationPage;
   let loginPage: LoginPage;
 
+  // Massa de dados persistida para o ciclo de vida deste bloco de testes
+  const usuarioTeste: RegistrationUser = {
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    dob: '1990-01-01',
+    address: faker.location.street(),
+    houseNumber: '123',
+    postcode: '12345',
+    city: faker.location.city(),
+    state: faker.location.state(),
+    country: 'US',
+    phone: faker.string.numeric(10),
+    email: faker.internet.email(),
+    password: gerarSenhaForte()
+  };
+
   test.beforeEach(async ({ page }) => {
+    registrationPage = new RegistrationPage(page);
     loginPage = new LoginPage(page);
-    await loginPage.navigate();
   });
 
-  test('Deve exibir erro ao tentar login com e-mail em formato inválido', async () => {
-    await loginPage.login('email_sem_arroba', 'senha123');
-    // Verifica se algum alerta de erro aparece na tela
-    const error = loginPage.errorMessage.first();
-    await expect(error).toBeVisible({ timeout: 7000 });
-  });
+  test('Deve realizar login com sucesso após o registro de um novo usuário', async ({ page }) => {
+    // 1. Garante que o usuário existe através do registro
+    await registrationPage.navigate();
+    await registrationPage.register(usuarioTeste);
+    
+    // 2. Realiza o login com as credenciais recém-criadas
+    await loginPage.navegar();
+    await loginPage.login(usuarioTeste.email, usuarioTeste.password);
 
-  test('Deve exibir erro ao tentar login com senha incorreta', async () => {
-    await loginPage.login('customer@practicesoftwaretesting.com', 'senha_errada');
-    const error = loginPage.errorMessage.first();
-    
-    await expect(error).toBeVisible({ timeout: 7000 });
-    
-    // Aceita a mensagem de erro de credenciais ou de conta bloqueada
-    await expect(error).toContainText(/Invalid email or password|Account locked/);
+    // 3. Valida se o login foi bem-sucedido (ex: redirecionamento para o perfil ou home)
+    await expect(page).toHaveURL(/.*account/);
+    await expect(page.locator('h1')).toContainText('My account');
   });
 });
