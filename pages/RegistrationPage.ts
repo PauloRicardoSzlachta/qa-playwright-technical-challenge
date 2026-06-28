@@ -1,8 +1,5 @@
 import { Page, Locator } from '@playwright/test';
 
-/**
- * Interface que define a estrutura de dados para o registro de novos usuários.
- */
 export interface RegistrationUser {
   firstName: string;
   lastName: string;
@@ -19,7 +16,7 @@ export interface RegistrationUser {
 }
 
 /**
- * Page Object responsável pela página de registro de clientes.
+ * Gerencia o formulário de registro de novos clientes e validações de cadastro.
  */
 export class RegistrationPage {
   readonly page: Page;
@@ -59,22 +56,21 @@ export class RegistrationPage {
   }
 
   /**
-   * Executa o preenchimento do formulário e submissão do registro.
-   * Utilizamos interações via teclado para garantir que os eventos de 
-   * reatividade da SPA sejam disparados corretamente.
+   * Preenche o formulário utilizando interações de teclado para garantir o disparo
+   * dos eventos de reatividade (blur/change) da SPA.
    */
   async registrar(user: RegistrationUser) {
     await this.firstNameInput.fill(user.firstName);
     await this.lastNameInput.fill(user.lastName);
     
-    // Disparo de Tab para processamento da validação de data
+    // O uso de Tab é essencial para processar as máscaras e validações de data de nascimento.
     await this.dobInput.fill(user.dob);
     await this.page.keyboard.press('Tab');
 
     await this.countrySelect.selectOption(user.country);
     await this.page.keyboard.press('Tab');
 
-    // Preenchimento via teclado para evitar bloqueios de estado do framework
+    // Preenchimento via teclado com delay mitiga bloqueios de estado do framework durante a digitação.
     await this.page.keyboard.type(user.postcode, { delay: 50 });
     await this.page.keyboard.press('Tab');
 
@@ -96,7 +92,7 @@ export class RegistrationPage {
 
     await this.registerButton.click();
 
-    // Sincronização: Aguarda o redirecionamento para garantir a persistência
+    // Aguarda a transição de rota para confirmar a persistência do registro no backend.
     await this.page.waitForURL(/.*login/);
   }
 }

@@ -1,7 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 
 /**
- * Page Object responsável pela gestão das interações na tela de Login.
+ * Gerencia os elementos e o fluxo de autenticação do sistema.
  */
 export class LoginPage {
   readonly page: Page;
@@ -15,7 +15,7 @@ export class LoginPage {
     this.emailInput = page.locator('#email');
     this.passwordInput = page.locator('#password');
     this.loginButton = page.locator('input[data-test="login-submit"]');
-    // Localizador para mensagens de erro de autenticação (alertas do Bootstrap)
+    // Localizador genérico para capturar diferentes falhas de autenticação (e-mail ou senha).
     this.alertaErro = page.locator('.alert-danger');
   }
 
@@ -23,12 +23,11 @@ export class LoginPage {
     await this.page.goto('/auth/login');
   }
 
-  /**
-   * Realiza a tentativa de autenticação no sistema.
-   */
   async login(email: string, pass: string) {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(pass);
+    
+    // O submit dispara a validação de sessão; o sincronismo é tratado na asserção do teste.
     await this.loginButton.click();
   }
 }

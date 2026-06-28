@@ -1,9 +1,15 @@
+/**
+ * Suíte de Testes: Item 3.4 - Registro de Usuário
+ * Responsabilidade: Validar o fluxo de criação de conta e persistência de novos registros.
+ */
+
 import { test, expect } from '@playwright/test';
 import { RegistrationPage, RegistrationUser } from '../pages/RegistrationPage';
 import { faker } from '@faker-js/faker';
 
 /**
  * Gera uma senha aleatória que atenda aos requisitos de complexidade do sistema.
+ * O uso de massa dinâmica reduz o risco de falsos negativos por conflitos de credenciais.
  */
 function gerarSenhaSegura(): string {
   const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
@@ -14,6 +20,7 @@ function gerarSenhaSegura(): string {
 test.describe('Fluxo de Registro de Usuário', () => {
   let registrationPage: RegistrationPage;
 
+  // Massa de dados dinâmica via Faker para garantir isolamento total entre execuções de teste.
   const usuarioParaTeste: RegistrationUser = {
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
@@ -35,10 +42,10 @@ test.describe('Fluxo de Registro de Usuário', () => {
   });
 
   test('Deve realizar o cadastro de um novo usuário com sucesso', async ({ page }) => {
-    // Sênior: Chamada do método renomeado para 'registrar' conforme o Page Object
+    // A lógica de preenchimento e sincronismo de eventos da SPA está encapsulada no Page Object.
     await registrationPage.registrar(usuarioParaTeste);
     
-    // Valida o redirecionamento para a tela de login após sucesso
+    // Valida o redirecionamento para a tela de login, confirmando a persistência no backend.
     await expect(page).toHaveURL(/.*login/);
   });
 });
