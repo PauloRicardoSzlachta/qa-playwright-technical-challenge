@@ -6,16 +6,7 @@
 import { test, expect } from '@playwright/test';
 import { RegistrationPage, RegistrationUser } from '../pages/RegistrationPage';
 import { faker } from '@faker-js/faker';
-
-/**
- * Gera uma senha aleatória que atenda aos requisitos de complexidade do sistema.
- * O uso de massa dinâmica reduz o risco de falsos negativos por conflitos de credenciais.
- */
-function gerarSenhaSegura(): string {
-  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
-  const senhaBase = Array.from({ length: 12 }, () => caracteres[Math.floor(Math.random() * caracteres.length)]);
-  return senhaBase.join('') + '1aA!';
-}
+import { gerarSenhaSegura } from '../utils/auth-helpers';
 
 test.describe('Fluxo de Registro de Usuário', () => {
   let registrationPage: RegistrationPage;

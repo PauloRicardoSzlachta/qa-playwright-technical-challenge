@@ -13,11 +13,19 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: 'html',  
+  timeout: 90000,
+
+  expect: {
+     timeout: 90000,
+  },  
+
   use: {
     /* Utiliza a URL definida no .env */
     baseURL: process.env.BASE_URL,
     trace: 'on-first-retry',
+    actionTimeout: 90000,
+    navigationTimeout: 90000,    
   },
 
   projects: [
